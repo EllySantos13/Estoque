@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entrada;
+use App\Models\Produto;
 use Illuminate\Http\Request;
 
 class EntradaController extends Controller
@@ -14,19 +15,46 @@ class EntradaController extends Controller
     }
 
     public function store(Request $request){
-          $entrada = Entrada::create([
-            'quantidade'=> $request->quantidade
-          ]);
-          Return response()->json($entrada);
+        $produto = Produto::find($request ->id_produto);
+
+        if(!$produto){
+            return response()->json(['Message' => 'Produto não encontrada']);
+        } else {
+            $entrada = Entrada::create([
+                "id_produto" => $request -> id_produto,
+                "quantidade"=> $request -> quantidade
+            ]);
+        }
+
+        if (isset($entrada)){
+            $produto -> estoque += $entrada-> quantidade;
+        }
+
+        $produto->update ();
+        return response()->json($entrada);
     }
 
     public function delete($id){
         $entrada = Entrada::find($id);
-        if(!$entrada){
-            return response()->json(['produto não encontrada']);
+
+        if ($entrada == NULL){
+            return response()->json(['Menssage' => 'Produto não encontrado']);
         }
 
-        $entrada->delete();
-        return response()->json(['produto deletado com sucesso']);
+        $produto = $entrada -> id_produto;
+
+        $quantidade = $entrada -> quantidade;
+
+        $produto = Produto::find($produto);
+
+        if(isset($produto)){
+            $produto->estoque -= $quantidade;
+        }
+
+        $produto->update();
+
+        $produto->delete($id);
+
+        return response()->json(['Message' => 'Produto deletado com sucesso']);
     }
 }

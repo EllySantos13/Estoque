@@ -21,5 +21,6 @@ class SaidaController extends Controller
             'quantidade'=> $request-> quantidade
         ]); 
         return response()->json($saida);
-    }
+        
+        }
 }
